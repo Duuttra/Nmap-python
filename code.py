@@ -2,33 +2,43 @@ import nmap
 import json
 from datetime import datetime
 
-target = input("IP ou domínio: ")
+# Pede o alvo pro usuário
+target = input("Digite o IP ou domínio: ")
 
+print(f"\nEscaneando {target}... aguarde!\n")
+
+# Cria o scanner e roda o scan
 scanner = nmap.PortScanner()
 
-print(f"Escaneando {target}...")
-scanner.scan(target, arguments="-sV")
+try:
+    scanner.scan(target, arguments="-sV")
+except Exception as erro:
+    print(f"Deu erro no scan: {erro}")
+    exit()
 
+# Monta o resultado
 resultados = {}
 
 for host in scanner.all_hosts():
-    resultados[host] = {
-        "estado": scanner[host].state(),
-        "protocolos": {}
-    }
+    print(f"Host: {host} — estado: {scanner[host].state()}")
+    resultados[host] = {"estado": scanner[host].state(), "portas": []}
 
     for proto in scanner[host].all_protocols():
-        resultados[host]["protocolos"][proto] = []
-
         for porta in scanner[host][proto].keys():
-            resultados[host]["protocolos"][proto].append({
-                "porta": porta,
-                "servico": scanner[host][proto][porta]["name"]
+            info = scanner[host][proto][porta]
+
+            print(f"  Porta {porta}/{proto} — {info['state']} — serviço: {info['name']}")
+
+            resultados[host]["portas"].append({
+                "porta":   porta,
+                "estado":  info["state"],
+                "servico": info["name"],
+                "versao":  info.get("version", ""),
             })
 
+# Salva em JSON
 arquivo = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-
 with open(arquivo, "w") as f:
     json.dump(resultados, f, indent=4)
 
-print(f"Relatório salvo em {arquivo}")
+print(f"\nRelatório salvo em: {arquivo}")
