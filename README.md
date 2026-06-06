@@ -86,4 +86,4 @@ Esta ferramenta destina-se exclusivamente a fins educacionais e ambientes autori
 
 ## 👨‍💻 Autor
 
-Cristyan Antonio
+Duuttra
